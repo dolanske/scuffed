@@ -14,7 +14,10 @@
   background-color: rgb(var(--color-bg));
   color: rgb(var(--color-text));
   text-decoration: none;
+  outline-color: rgb(var(--color-blue));
 
+  &:focus,
+  &:active,
   &:hover {
     transform: translate(2px, 2px);
 
@@ -86,7 +89,6 @@
   pointer-events: none;
   height: 32px;
   line-height: 32px;
-  // width: 72px;
   padding: 0 20px;
   background-color: rgb(Var(--color-blue));
   color: rgb(var(--color-text-white));

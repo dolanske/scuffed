@@ -1,9 +1,9 @@
 import { merge } from "lodash"
 
-export const rootUrl = "127.0.0.1:8080"
+export const rootUrl = "https://scuffed.tv"
 export const url = process.env.NODE_ENV === "development" ? "127.0.0.1:8080" : rootUrl
 
-export function get(url: string, options?: {}) {
+export function get<T = any>(url: string, options?: {}) {
   return _handleFetch(
     url,
     merge(
@@ -12,7 +12,7 @@ export function get(url: string, options?: {}) {
       },
       options
     )
-  )
+  ) as Promise<T>
 }
 
 export function post(url: string, body: object | string, options?: object) {
@@ -101,28 +101,13 @@ async function _handleResponse(response: Response) {
   //   }, 50)
   // }
 
-  if (response.status !== 200) {
-    return response.text().then((text: string) => {
-      let message = ""
-      try {
-        const parsed = JSON.parse(text)
-        message = parsed.message
-      } catch (e) {
-        message = text
-      }
-
+  return response.json().then((res: {}) => {
+    if (!response.ok || response.status !== 200) {
       return Promise.reject({
         status: response.status,
-        message
+        message: response.statusText,
+        data: res
       })
-    })
-  }
-
-  // console.log(respone.json());
-
-  return response.json().then((res: string) => {
-    if (!response.ok) {
-      return Promise.reject(res)
     }
 
     return res

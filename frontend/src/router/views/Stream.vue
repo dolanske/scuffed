@@ -3,18 +3,19 @@ import InputSlider from "../../components/form/InputSlider.vue"
 import { ref, reactive, onMounted, watch } from "vue"
 import { isEven } from "../../bin/utils"
 import { onKeyStroke, useMagicKeys, whenever } from "@vueuse/core"
-import { isNil } from "lodash"
+import { Stream } from "../../bin/stream/stream"
 
 const defaultVolume = Number(localStorage.getItem("stream-vol") ?? 30)
 const defaultIncrement = 5
-const stream = ref<HTMLMediaElement>()
+const streamEl = ref<HTMLMediaElement>()
+const stream = ref<Stream>()
 
 onMounted(() => {
   const el = document.querySelector<HTMLMediaElement>("#video")
 
   if (el) {
-    stream.value = el
-    stream.value.volume = defaultVolume / 100
+    streamEl.value = el
+    streamEl.value.volume = defaultVolume / 100
   }
 })
 
@@ -27,8 +28,8 @@ const state = reactive({
   UIVolume: false
 })
 
-const Play = () => (stream.value ? stream.value.play() : null)
-const Pause = () => (stream.value ? stream.value.pause() : null)
+const Play = () => (streamEl.value ? streamEl.value.play() : null)
+const Pause = () => (streamEl.value ? streamEl.value.pause() : null)
 
 // Mouse movement
 let timeout: any
@@ -87,8 +88,8 @@ watch(
     state.UIVolume = true
     localStorage.setItem("stream-volume", String(value))
 
-    if (stream.value) {
-      stream.value.volume = value / 100
+    if (streamEl.value) {
+      streamEl.value.volume = value / 100
     }
   }
 )
@@ -125,7 +126,7 @@ watch(
     </div>
     <div
       class="stream-controls"
-      v-if="stream"
+      v-if="streamEl"
       :class="{ active: state.UI }"
       @mouseenter="state.UIHover = true"
       @mouseleave="state.UIHover = false"

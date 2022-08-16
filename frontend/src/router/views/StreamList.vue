@@ -1,21 +1,20 @@
 <script setup lang="ts">
-import { ref } from "vue"
-import { startStreamsUpdate } from "../../bin/stream"
+import { onBeforeUnmount, onMounted, ref } from "vue"
+import { updateStreamsEvery } from "../../bin/stream/snapshot"
 
 import StreamItem from "../../components/StreamItem.vue"
 
-const streams = ref()
-startStreamsUpdate()
+const { streams } = updateStreamsEvery(100000)
 </script>
 
 <template>
   <div class="streams">
     <div class="container">
-      <template v-if="streams">
+      <template v-if="streams && streams.length > 0">
         <h1>All streams</h1>
 
         <div class="streams-list">
-          <StreamItem v-for="stream in streams" :key="stream.username" :data="stream" />
+          <StreamItem v-for="stream in streams" :key="stream.name" :data="stream" />
         </div>
       </template>
       <template v-else>

@@ -2,6 +2,9 @@
 import InputText from "../../components/form/InputText.vue"
 import { reactive, computed } from "vue"
 import { useFormValidation, required, minLength } from "../../bin/validation.js"
+import { useRouter } from "vue-router"
+
+const router = useRouter()
 
 /**
  * Signing in
@@ -30,6 +33,8 @@ async function submit() {
       // Submit
       if (form.username && form.password) {
         // Do auth
+        console.log("kinda ok")
+        router.push({ name: "StreamList" })
       }
     })
     .catch((errors) => {
@@ -45,12 +50,20 @@ async function submit() {
 
       <h1>Scuffed.<b class="brand-gradient">tv</b></h1>
       <form @submit.prevent="submit">
-        <InputText type="text" label="Name" v-model:value="form.username" placeholder="Username" />
+        <InputText
+          focus
+          type="text"
+          label="Name"
+          v-model:value="form.username"
+          placeholder="Username"
+          :error="errors.username"
+        />
         <InputText
           type="password"
           label="Password"
           v-model:value="form.password"
           placeholder="VerySecurePassword1"
+          :error="errors.password"
         />
       </form>
 

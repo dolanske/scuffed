@@ -1,27 +1,28 @@
 <script setup lang="ts">
-import { ref, reactive, computed } from "vue"
-import { StreamItem } from "../bin/types"
+import { ref, reactive, computed, watchEffect } from "vue"
+import { StreamItem } from "../types/stream-types"
 import { getDurationSince } from "../bin/utils"
+import { getUpdatedThumbnailEvery } from "../bin/stream/snapshot"
 
 const props = defineProps<{
   data: StreamItem
 }>()
 
-const time = computed(() => getDurationSince(props.data.startedAt))
+const { thumbnail } = getUpdatedThumbnailEvery(props.data, 3000)
 </script>
 
 <template>
-  <router-link class="stream-item" :to="{ name: 'Stream', params: { user: props.data.username } }">
+  <router-link class="stream-item" :to="{ name: 'Stream', params: { user: props.data.name } }">
     <div class="stream-thumbnail">
-      <img :src="props.data.thumbnail" alt="" />
+      <img :src="thumbnail" alt="" />
     </div>
 
     <div class="stream-info">
-      <strong>{{ props.data.username }}</strong>
+      <strong>{{ props.data.name }}</strong>
 
-      <span>{{ props.data.views }} views</span>
+      <span>{{ props.data.viewers }} views</span>
       <div class="divider"></div>
-      <span>Streaming for {{ time }} </span>
+      <!-- <span>Streaming for {{ time }} </span> -->
     </div>
   </router-link>
 </template>

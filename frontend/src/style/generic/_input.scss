@@ -25,6 +25,7 @@
     line-height: 16px;
     background-color: rgb(var(--color-bg));
     font-size: 1.4rem;
+    letter-spacing: 0.05em;
   }
 
   input {
@@ -58,8 +59,10 @@
 }
 
 ::placeholder {
+  @include font(700);
+  letter-spacing: 0.05em;
   font-size: 1.4rem;
-  color: rgba(var(--color-text), 0.75);
+  color: rgba(var(--color-text), 0.5);
 }
 
 input:-webkit-autofill,

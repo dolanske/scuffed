@@ -5,10 +5,12 @@ import beforeEach from "./guards/beforeEach"
 import beforeResolve from "./guards/beforeResolve"
 
 import RouterMain from "./routes/router-main"
+import RouterUser from "./routes/router-user"
+import RouterStream from "./routes/router-stream"
 
 const router = createRouter({
   history: createWebHistory(),
-  routes: [...RouterMain]
+  routes: [...RouterMain, ...RouterUser, ...RouterStream]
 })
 
 router.beforeResolve(beforeResolve)

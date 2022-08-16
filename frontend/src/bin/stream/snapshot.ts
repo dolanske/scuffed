@@ -1,6 +1,14 @@
 "use strict"
 
-import { get } from "./fetch"
+import { get, rootUrl } from "../fetch"
+import { onUnmounted, reactive, ref } from "vue"
+import { StreamItem } from "../../types/stream-types"
+
+// # Snapshot
+// https://scuffed.tv/api/streams/dolanske/snapshot
+
+// #Video
+// https://scuffed.tv/api/streams/dolanske/video
 
 interface VideoDecoder {
   dstWidth: number
@@ -71,13 +79,58 @@ class VideoDecoder {
   }
 }
 
-const decoder = new VideoDecoder(180, 120)
-let interval: NodeJS.Timeout
+/**
+ * Vue composable function which returns the list of streams and their thumbnails every provided <ms>
+ *
+ * @default frequency is 10 seconds
+ */
+export function updateStreamsEvery(frequency: number = 10000) {
+  const streams = ref<StreamItem[]>([])
+  // Set up interval
+  const interval: NodeJS.Timeout = setInterval(updateStreams, frequency)
 
-export async function startStreamsUpdate() {
-  const streams = await get("/api/streams")
+  // Run once
+  updateStreams()
 
-  console.log(streams)
+  // Decode thumbnails and assign stream list to reactive variable
+  async function updateStreams() {
+    streams.value = await get<StreamItem[]>("/api/streams")
+  }
+
+  onUnmounted(() => {
+    clearInterval(interval)
+  })
+
+  return {
+    streams
+  }
 }
 
-export async function stopStreamsUpdate() {}
+/**
+ * Fetch stream thumbnail in specified frequency
+ */
+
+export const thumbnailDecoder = new VideoDecoder(600, 400)
+
+export function getUpdatedThumbnailEvery(streamObject: StreamItem, frequency: number = 5000) {
+  const thumbnail = ref<string>()
+  // Set up interval
+  const interval: NodeJS.Timeout = setInterval(updateThumbnail, frequency)
+
+  // run once
+  updateThumbnail()
+
+  async function updateThumbnail() {
+    thumbnail.value = await thumbnailDecoder.decode(
+      `${rootUrl}/api/streams/${streamObject.name}/snapshot`
+    )
+  }
+
+  onUnmounted(() => {
+    clearInterval(interval)
+  })
+
+  return {
+    thumbnail
+  }
+}
