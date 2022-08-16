@@ -5,6 +5,35 @@
   padding: 96px;
   padding-bottom: 256px;
 
+  .go-back {
+    @include flex($gap: 16px);
+    font-size: 1.8rem;
+    margin-bottom: 40px;
+
+    &:hover {
+      .icon-wrap {
+        background-color: rgba(var(--color-blue), 1);
+
+        .material-icons {
+          color: rgb(var(--color-text-white));
+        }
+      }
+    }
+
+    .icon-wrap {
+      @include t();
+      @include radius(50%);
+      @include flex($align: center, $justify: center);
+      width: 48px;
+      height: 48px;
+      background-color: rgba(var(--color-blue), 0.5);
+
+      .material-icons {
+        @include t();
+      }
+    }
+  }
+
   h1 {
     @include font(700);
     font-size: 10rem;

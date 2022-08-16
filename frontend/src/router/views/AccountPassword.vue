@@ -53,6 +53,13 @@ async function savePassword() {
 
 <template>
   <div class="account">
+    <router-link :to="{ name: 'Account' }" class="go-back">
+      <div class="icon-wrap">
+        <Icon code="west" />
+      </div>
+      Back to account
+    </router-link>
+
     <h2>Update password</h2>
 
     <form @submit.prevent="savePassword">
@@ -80,7 +87,9 @@ async function savePassword() {
         placeholder="Confirm your new password"
       />
 
-      <button style="margin-top: 20px" @click.prevent="savePassword" class="button btn-small">Save</button>
+      <button style="margin-top: 20px" @click.prevent="savePassword" class="button btn-small">
+        Save
+      </button>
     </form>
   </div>
 </template>

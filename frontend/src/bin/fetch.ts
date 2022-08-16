@@ -1,9 +1,9 @@
 import { merge } from "lodash"
 
-export const rootUrl = "localhost:9999"
-// export const url = process.env.NODE_ENV === "development" ? "localhost:9999" : rootUrl
+export const rootUrl = "127.0.0.1:8080"
+export const url = process.env.NODE_ENV === "development" ? "127.0.0.1:8080" : rootUrl
 
-export function get(url: string, options?: object) {
+export function get(url: string, options?: {}) {
   return _handleFetch(
     url,
     merge(
@@ -83,21 +83,23 @@ async function _handleFetch(url: string, options: object) {
 }
 
 async function _handleResponse(response: Response) {
+  console.log(response)
+
   // Reset on 403
-  if ([401, 403].includes(response.status)) {
-    localStorage.removeItem("user")
-    localStorage.removeItem("bearer_token")
+  // if ([401, 403].includes(response.status)) {
+  //   localStorage.removeItem("user")
+  //   localStorage.removeItem("bearer_token")
 
-    setTimeout(() => {
-      if (window.location.href === "/login") {
-        window.location.href = "/login"
-      }
+  //   setTimeout(() => {
+  //     if (window.location.href === "/login") {
+  //       window.location.href = "/login"
+  //     }
 
-      return Promise.reject({
-        message: "Unexpected issue. Please clear site data, reload and try again."
-      })
-    }, 50)
-  }
+  //     return Promise.reject({
+  //       message: "Unexpected issue. Please clear site data, reload and try again."
+  //     })
+  //   }, 50)
+  // }
 
   if (response.status !== 200) {
     return response.text().then((text: string) => {
@@ -116,13 +118,13 @@ async function _handleResponse(response: Response) {
     })
   }
 
-  return response.text().then((text: string) => {
-    const data = text && JSON.parse(text)
+  // console.log(respone.json());
 
+  return response.json().then((res: string) => {
     if (!response.ok) {
-      return Promise.reject(data)
+      return Promise.reject(res)
     }
 
-    return data
+    return res
   })
 }

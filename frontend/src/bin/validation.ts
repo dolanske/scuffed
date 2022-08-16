@@ -37,7 +37,7 @@ interface ValidationOptions {
 export function useFormValidation(
   form: object,
   rules: any,
-  { proactive = false, autoclear = false }: ValidationOptions = {}
+  { autoclear = false }: ValidationOptions = {}
 ) {
   const errors = reactive<Errors>({})
 

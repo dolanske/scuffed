@@ -14,7 +14,6 @@ onMounted(() => {
 
   if (el) {
     stream.value = el
-
     stream.value.volume = defaultVolume / 100
   }
 })
@@ -32,7 +31,7 @@ const Play = () => (stream.value ? stream.value.play() : null)
 const Pause = () => (stream.value ? stream.value.pause() : null)
 
 // Mouse movement
-let timeout: NodeJS.Timeout
+let timeout: any
 
 document.addEventListener("mousemove", (e) => {
   clearTimeout(timeout)
@@ -68,20 +67,6 @@ onKeyStroke(["k"], () => {
   else Play()
 })
 
-// Volume
-
-watch(
-  () => state.volume,
-  (value) => {
-    state.UIVolume = true
-    localStorage.setItem("stream-volume", String(value))
-
-    if (stream.value) {
-      stream.value.volume = value / 100
-    }
-  }
-)
-
 whenever(Space, () => {
   if (state.playing) Pause()
   else Play()
@@ -94,6 +79,19 @@ whenever(Equal, () => {
 whenever(Minus, () => {
   state.volume = Math.max(0, state.volume - defaultIncrement)
 })
+
+watch(
+  // Control stream volume
+  () => state.volume,
+  (value) => {
+    state.UIVolume = true
+    localStorage.setItem("stream-volume", String(value))
+
+    if (stream.value) {
+      stream.value.volume = value / 100
+    }
+  }
+)
 </script>
 
 <template>
@@ -143,7 +141,7 @@ whenever(Minus, () => {
         :data-title-top="`Volume (${state.volume}%)`"
         @click="state.UIVolume = !state.UIVolume"
       >
-        <Icon code="volume_up" />
+        <Icon :code="state.volume === 0 ? 'volume_off' : 'volume_up'" />
       </button>
 
       <InputSlider v-if="state.UIVolume" v-model:value="state.volume" />
