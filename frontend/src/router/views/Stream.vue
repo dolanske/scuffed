@@ -199,12 +199,6 @@ watch(
       <!-- <InputSlider v-if="state.UIVolume" v-model:value="state.volume" /> -->
       <InputSlider v-model:value="state.volume" />
 
-      <!-- <button class="stream-button" data-title-top="Mute"><Icon code="volume_off" /></button> -->
-      <!-- <div class="flex-1"></div> -->
-      <!-- <button class="stream-button" data-title-top="Open chat"><Icon code="chat" /></button> -->
-
-      <!-- <div class="flex-1"></div> -->
-
       <div class="divider"></div>
 
       <span class="stream-button">
