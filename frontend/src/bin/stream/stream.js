@@ -407,7 +407,7 @@ export class MseStream {
   // TODO add documentation
   attachStream() {
     this.eventController = new AbortController()
-    let signal = this.eventController.signal
+    const { signal } = this.eventController
 
     LOG.debug(`Connecting to '${this.streamUri}'`)
 
@@ -450,7 +450,7 @@ export class MseStream {
       this.hasInFlightUpdates = false
       this.frames = []
       this.webSocket.close(1000, "Shutting down stream")
-      this.mseSource.endOfStream()
+      // this.mseSource.endOfStream()
       this.mseSource.removeSourceBuffer(this.mseBuffer)
       this.eventController?.abort()
     }
@@ -473,7 +473,7 @@ export class MseStream {
   webSocketOpen(event) {
     LOG.debug(`WebSocket connection to '${this.streamUri}' established`)
 
-    this.executeEvent("init")
+    this.executeEvent("init", event)
 
     this.isExpectingData = true
   }
@@ -543,7 +543,7 @@ export class MseStream {
   mseBufferUpdateEnd(event) {
     const buffered = this.getBufferedVideoDuration()
 
-    if (!this.d && buffered >= this.targetBuffer) {
+    if (!this.videoStarted && buffered >= this.targetBuffer) {
       // LOG.debug(`Starting video with ${buffered} seconds buffered`)
 
       this.videoElement.play()
