@@ -1,5 +1,15 @@
+<script setup lang="ts">
+interface Props {
+  center?: boolean
+}
+
+withDefaults(defineProps<Props>(), {
+  center: false
+})
+</script>
+
 <template>
-  <div class="lds-ring">
+  <div class="lds-ring spinner" :class="{ 'spinner-center': center }">
     <div></div>
     <div></div>
     <div></div>
@@ -7,7 +17,7 @@
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 /* @import "../../style/setup/_variables.scss"; */
 
 .lds-ring {
@@ -15,6 +25,11 @@
   position: relative;
   width: 80px;
   height: 80px;
+
+  &.spinner-center {
+    display: block;
+    margin: 0 auto;
+  }
 }
 .lds-ring div {
   box-sizing: border-box;

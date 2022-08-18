@@ -282,6 +282,7 @@ export class StreamStatistics {
 }
 
 export class MseStream {
+  // TODO: Rename variables to be simplier but well documented
   #statsContainer
   #videoElement
   #streamUri
@@ -306,13 +307,15 @@ export class MseStream {
   // onconnectstart
   // onconnectionsuccess
   // onframe
-
   //
+
   events = {
     fail: [],
     init: [],
     loaded: [],
-    frame: []
+    frame: [],
+    pause: [],
+    registered: []
   }
 
   constructor(streamUri, options) {
@@ -326,29 +329,35 @@ export class MseStream {
     this.previousBufferRemoval = performance.now()
   }
 
+  // TODO add documentation
   set targetBuffer(target) {
     LOG.debug(`Target buffer set to ${target}`)
     this.target = target
   }
 
+  // TODO add documentation
   get targetBuffer() {
     return this.target
   }
 
+  // TODO add documentation
   get video() {
     return this.videoElement
   }
 
+  // TODO add documentation
   set video(videoElement) {
     this.removeStream()
     this.videoElement = videoElement
     // this.attachStream();
   }
 
+  // TODO add documentation
   set statsContainer(containerElement) {
     this.stats.statsParent = containerElement
   }
 
+  // TODO add documentation
   get statsContainer() {
     return this.stats.statsParent
   }
@@ -361,23 +370,32 @@ export class MseStream {
    */
 
   on(eventType, callback) {
-    // Attaches a new callback
+    // Registers a new callback
     if (this.events[eventType]) {
       this.events[eventType].push(callback)
     }
   }
 
-  executeEvent(type, ...payload) {
-    if (this.events[type]) {
-      this.events[type].map((event) => event(...payload))
+  /**
+   *
+   * @param {fail | init | loaded | frame} eventType Should match a key which is present in the events object
+   * @param  {any[]} payload Payload for the callback function
+   *
+   * // REVIEW: Should payload be passed as a single object which callback can destructure or should parameters be an array?
+   */
+  executeEvent(eventType, ...payload) {
+    if (this.events[eventType]) {
+      this.events[eventType].map((event) => event(...payload))
     }
   }
 
-  reconnect() {
-    this.removeStream()
-    this.attachStream()
-  }
+  // FIXME: not referenced anywhere
+  // reconnect() {
+  //   this.removeStream()
+  //   this.attachStream()
+  // }
 
+  // TODO add documentation
   getDebugLogs() {
     LOG.debug("Generating debug logs")
 
@@ -386,29 +404,40 @@ export class MseStream {
     return logs
   }
 
+  // TODO add documentation
   attachStream() {
     this.eventController = new AbortController()
     let signal = this.eventController.signal
 
     LOG.debug(`Connecting to '${this.streamUri}'`)
 
-    this.videoElement.addEventListener("playing", (e) => LOG.debug("playing"), { signal: signal })
-    this.videoElement.addEventListener("pause", (e) => LOG.warn("pause"), { signal: signal })
-    this.videoElement.addEventListener("waiting", (e) => LOG.warn("waiting"), { signal: signal })
-    this.videoElement.addEventListener("stalled", (e) => LOG.warn("stalled"), { signal: signal })
-    this.videoElement.addEventListener("suspend", (e) => LOG.warn("suspend"), { signal: signal })
-    this.videoElement.addEventListener("error", (e) => LOG.error("error"), { signal: signal })
+    this.videoElement.addEventListener("playing", () => LOG.debug("playing"), { signal })
+
+    this.videoElement.addEventListener(
+      "pause",
+      () => {
+        //FIXME shouldn't pause logic exist here?
+        LOG.warn("pause")
+        this.executeEvent("pause")
+      },
+      { signal }
+    )
+    this.videoElement.addEventListener("waiting", () => LOG.warn("waiting"), { signal })
+    this.videoElement.addEventListener("stalled", () => LOG.warn("stalled"), { signal })
+    this.videoElement.addEventListener("suspend", () => LOG.warn("suspend"), { signal })
+    this.videoElement.addEventListener("error", () => LOG.error("error"), { signal })
 
     this.webSocket = new WebSocket(this.streamUri)
     this.webSocket.binaryType = "arraybuffer"
-    this.webSocket.addEventListener("close", this.webSocketClose.bind(this), { signal: signal })
-    this.webSocket.addEventListener("error", this.webSocketError.bind(this), { signal: signal })
-    this.webSocket.addEventListener("open", this.webSocketOpen.bind(this), { signal: signal })
-    this.webSocket.addEventListener("message", this.webSocketMessage.bind(this), { signal: signal })
+    this.webSocket.addEventListener("close", this.webSocketClose.bind(this), { signal })
+    this.webSocket.addEventListener("error", this.webSocketError.bind(this), { signal })
+    this.webSocket.addEventListener("open", this.webSocketOpen.bind(this), { signal })
+    this.webSocket.addEventListener("message", this.webSocketMessage.bind(this), { signal })
 
     this.stats.createStatsContainer()
   }
 
+  // TODO add documentation
   removeStream() {
     LOG.debug("Removing media source")
 
@@ -434,11 +463,13 @@ export class MseStream {
     this.webSocket = null
   }
 
+  // TODO add documentation
   streamFailed(event) {
     // Execute failed callback
     this.executeEvent("fail", event)
   }
 
+  // TODO add documentation
   webSocketOpen(event) {
     LOG.debug(`WebSocket connection to '${this.streamUri}' established`)
 
@@ -447,18 +478,21 @@ export class MseStream {
     this.isExpectingData = true
   }
 
+  // TODO add documentation
   webSocketClose(event) {
     LOG.warn(`WebSocket connection to '${this.streamUri}' closed: ${event.code}`)
 
     this.streamFailed(event)
   }
 
+  // TODO add documentation
   webSocketError(event) {
     LOG.warn(`WebSocket connection error`)
 
     this.streamFailed(event)
   }
 
+  // TODO add documentation
   webSocketMessageInit(codecs) {
     this.codec = codecs
 
@@ -474,44 +508,43 @@ export class MseStream {
     this.videoElement.src = mseSrc
   }
 
+  // TODO add documentation
   mseBufferError(event) {
     LOG.error(`MSE buffer error: ${event}`)
   }
 
+  // TODO add documentation
   mseSourceClose(event) {
     LOG.debug(`MSE source closed: ${event}`)
   }
 
+  // TODO add documentation
   mseSourceOpen(event) {
-    this.registerVideoEvents()
+    // this.registerVideoEvents()
+    this.executeEvent("registered")
 
     let signal = this.eventController.signal
 
     this.mseBuffer = this.mseSource.addSourceBuffer(this.codec)
     this.mseBuffer.mode = "sequence"
-    this.mseBuffer.addEventListener("error", this.mseBufferError.bind(this), { signal: signal })
-    this.mseBuffer.addEventListener("updateend", this.mseBufferUpdateEnd.bind(this), {
-      signal: signal
-    })
+    this.mseBuffer.addEventListener("error", this.mseBufferError.bind(this), { signal })
+    this.mseBuffer.addEventListener("updateend", this.mseBufferUpdateEnd.bind(this), { signal })
 
     this.playbackControlInterval = setInterval(() => {
       this.adjustPlaybackSpeed()
     }, 1000 / 5)
+
     this.framePollInterval = setInterval(() => {
       this.feedFrame()
     }, 1000 / 60)
   }
 
+  // TODO add documentation
   mseBufferUpdateEnd(event) {
     const buffered = this.getBufferedVideoDuration()
 
     if (!this.d && buffered >= this.targetBuffer) {
-      LOG.debug(`Starting video with ${buffered} seconds buffered`)
-
-      // Duplicate of 509
-      // if (this.onconnectionsuccess != null) {
-      //   this.onconnectionsuccess()
-      // }
+      // LOG.debug(`Starting video with ${buffered} seconds buffered`)
 
       this.videoElement.play()
       this.videoStarted = true
@@ -524,6 +557,7 @@ export class MseStream {
 
     const removeLen = this.videoElement.currentTime - 60
     const now = performance.now()
+
     if (!this.hasInFlightUpdates && removeLen > 0 && now - this.previousBufferRemoval > 10 * 1000) {
       this.mseBuffer.remove(0, removeLen)
       this.previousBufferRemoval = now
@@ -531,6 +565,7 @@ export class MseStream {
     }
   }
 
+  // TODO add documentation
   webSocketSegment(segment) {
     this.executeEvent("frame", segment)
 
@@ -538,6 +573,7 @@ export class MseStream {
     this.feedFrame()
   }
 
+  // TODO add documentation
   webSocketMessage(event) {
     if (!this.isExpectingData) {
       return
@@ -553,14 +589,17 @@ export class MseStream {
     }
   }
 
-  registerVideoEvents() {}
+  // TODO add documentation
+  // TODO Implement
+  // registerVideoEvents() {}
 
-  removeEvents() {
-    this.eventController.abort()
-  }
+  // TODO add documentation
+  // FIXME: not referenced anywhere
+  // removeEvents() {
+  //   this.eventController.abort()
+  // }
 
-  // Gets the amount of buffered video from the current time in the
-  // video
+  // Gets the amount of buffered video from the current time in the video
   getBufferedVideoDuration() {
     if (this.videoElement == null) {
       return 0
@@ -587,6 +626,8 @@ export class MseStream {
     return bufferedDuration
   }
 
+  // TODO add documentation
+
   adjustPlaybackSpeed() {
     let buffered = this.getBufferedVideoDuration()
     let target = this.targetBuffer
@@ -606,6 +647,8 @@ export class MseStream {
 
     this.videoElement.playbackRate = playbackRate
   }
+
+  // TODO add documentation
 
   feedFrame() {
     if (this.mseBuffer != null && !this.hasInFlightUpdates) {

@@ -7,10 +7,11 @@ import { isEven } from "../../bin/utils"
 import { onKeyStroke, useMagicKeys, whenever } from "@vueuse/core"
 //@ts-ignore
 import { MseStream } from "../../bin/stream/stream"
-import { useRoute } from "vue-router"
+import { useRoute, useRouter } from "vue-router"
 import { isArray } from "lodash"
 
 const route = useRoute()
+const router = useRouter()
 
 const defaultVolume = Number(localStorage.getItem("stream-vol") ?? 30)
 const defaultIncrement = 5
@@ -24,29 +25,34 @@ onMounted(() => {
 
   // If video element is mounted
   if (el) {
+    // SECTION Begin streaming
+    stream = new MseStream(`wss://scuffed.tv/api/streams/${user.value}/video`)
+    stream.video = el
+
     // Set up and save to reactive var
     streamEl.value = el
     streamEl.value.volume = defaultVolume / 100
 
-    // SECTION Begin streaming
-    stream = new MseStream(`wss://scuffed.tv/api/streams/${user.value}/video`)
-    stream.video = el
     stream.attachStream()
 
     stream.on("fail", () => {
       state.offline = true
-
-      console.log("fail")
+      console.log("__event__ - fail")
     })
-    stream.on("init", () => {
-      console.log("init")
 
+    stream.on("init", () => {
+      console.log("__event__ - init")
       state.loading = true
       state.offline = false
     })
+
     stream.on("loaded", () => {
-      state.loading = false
+      if (state.loading) {
+        state.loading = false
+      }
     })
+
+    stream
   }
 })
 
@@ -60,7 +66,7 @@ onBeforeUnmount(() => {
 // Video controls
 const state = reactive({
   loading: false,
-  offline: true,
+  offline: false,
   playing: false,
   UI: true,
   UIHover: false,
@@ -154,6 +160,12 @@ watch(
     }
   }
 )
+
+// Exit
+
+onKeyStroke(["Escape"], () => {
+  router.push({ name: "Streams" })
+})
 </script>
 
 <template>
@@ -187,7 +199,7 @@ watch(
     </div>
     <div
       class="stream-controls"
-      v-if="streamEl"
+      v-if="streamEl && !state.loading && !state.offline"
       :class="{ active: state.UI }"
       @mouseenter="state.UIHover = true"
       @mouseleave="state.UIHover = false"
@@ -222,7 +234,7 @@ watch(
       <div class="divider"></div>
 
       <span class="stream-button">
-        <Icon code="info" />
+        <Icon code="help_outline" />
 
         <ul class="stream-keyboard-controls">
           <li>

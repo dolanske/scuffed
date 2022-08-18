@@ -1,16 +1,20 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref } from "vue"
+import Spinner from "../../components/simple/Spinner.vue"
 import { updateStreamsEvery } from "../../bin/stream/snapshot"
 
 import StreamItem from "../../components/StreamItem.vue"
 
-const { streams } = updateStreamsEvery(5000)
+const { streams, loading } = updateStreamsEvery(5000)
 </script>
 
 <template>
   <div class="streams">
     <div class="container">
-      <template v-if="streams && streams.length > 0">
+      <template v-if="loading">
+        <Spinner center />
+      </template>
+
+      <template v-else-if="streams && streams.length > 0">
         <h1>All streams</h1>
 
         <div class="streams-list">

@@ -86,7 +86,7 @@ class VideoDecoder {
  */
 export function updateStreamsEvery(frequency: number = 10000) {
   const streams = ref<StreamItem[]>([])
-  const loading = ref<boolean>()
+  const loading = ref<boolean>(true)
 
   // Set up interval
   const interval: NodeJS.Timeout = setInterval(updateStreams, frequency)
@@ -96,7 +96,6 @@ export function updateStreamsEvery(frequency: number = 10000) {
 
   // Decode thumbnails and assign stream list to reactive variable
   async function updateStreams() {
-    loading.value = true
     streams.value = await get<StreamItem[]>("/api/streams")
     loading.value = false
   }
