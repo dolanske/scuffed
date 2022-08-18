@@ -4,7 +4,7 @@ import { updateStreamsEvery } from "../../bin/stream/snapshot"
 
 import StreamItem from "../../components/StreamItem.vue"
 
-const { streams } = updateStreamsEvery(100000)
+const { streams } = updateStreamsEvery(5000)
 </script>
 
 <template>

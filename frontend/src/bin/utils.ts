@@ -44,3 +44,12 @@ export function getDurationSince(timestamp: number, short = true, ago = false) {
 export function isEven(a: number): boolean {
   return a % 2 === 0
 }
+
+export function on(
+  element: any,
+  event: keyof EventSourceEventMap | keyof WebSocketEventMap | keyof MediaSourceEventMap,
+  callback: any,
+  options?: any
+): void {
+  element.addEventListener(event, callback, options)
+}

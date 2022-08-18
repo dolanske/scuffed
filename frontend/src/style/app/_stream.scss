@@ -6,6 +6,29 @@
   background-color: rgb(var(--color-dark));
   z-index: 1;
 
+  &.is-fullscreen {
+    .stream-video {
+      video {
+        width: 100%;
+        height: 100%;
+      }
+    }
+  }
+
+  // Stream is dark-mode by default, need to update some default styles
+  [data-title-left],
+  [data-title-right],
+  [data-title-bottom],
+  [data-title-bottom-left],
+  [data-title-bottom-right],
+  [data-title-top],
+  [data-title-top-left],
+  [data-title-top-right] {
+    &:before {
+      border-color: rgb(var(--color-dark-accent));
+    }
+  }
+
   .stream-video {
     @include flex($gap: 0, $justify: center, $align: center, $direction: column);
     height: 100%;
@@ -22,15 +45,16 @@
 
     video {
       background-color: rgb(var(--color-dark));
-      width: 100%;
-      height: 100%;
+      width: 90%;
+      height: 75%;
       object-fit: contain;
+      object-position: center;
     }
   }
 
   .stream-controls {
     @include t();
-    @include flex();
+    @include flex($justify: center);
     padding: 24px 32px 16px;
     position: absolute;
     inset: 0;
@@ -45,6 +69,12 @@
       pointer-events: all;
       opacity: 1;
       transform: translateY(0);
+    }
+
+    .divider {
+      margin: 0 16px;
+      height: 24px;
+      border-left: 2px solid rgb(var(--color-dark-accent));
     }
   }
 
@@ -85,6 +115,13 @@
         opacity: 1;
         transform: scale(1);
       }
+
+      .stream-keyboard-controls {
+        bottom: calc(100% + 16px);
+        visibility: visible;
+        opacity: 1;
+        z-index: 10;
+      }
     }
 
     .material-icons {
@@ -93,8 +130,67 @@
       left: 50%;
       top: 50%;
       transform: translate(-50%, -50%);
-      color: rgb(var(--color-text-white));
+      color: rgba(var(--color-text-white));
       text-shadow: 0 1px 4px rgb(var(--color-dark), 0.5);
+    }
+
+    .stream-keyboard-controls {
+      @include t();
+
+      // @inclue
+      width: 292px;
+      position: absolute;
+      bottom: 100%;
+      left: 0;
+
+      z-index: -1;
+      visibility: hidden;
+      pointer-events: none;
+      opacity: 0;
+      border: 2px solid rgb(var(--color-dark-accent));
+      padding: 20px;
+      background-color: rgb(var(--color-dark));
+
+      list-style: none;
+
+      li {
+        @include flex($gap: 16px);
+        margin-bottom: 16px;
+
+        &:last-of-type {
+          margin-bottom: 0;
+        }
+
+        & > div {
+          // @include flex($gap: 20px);
+          font-size: 1rem;
+          color: rgba(var(--color-text-white), 0.5);
+
+          kbd {
+            @include radius(2px);
+            @include flex($align: center);
+            // display: block;
+            border: 2px solid rgb(var(--color-blue));
+            background-color: rgba(var(--color-blue), 0.2);
+            color: rgb(var(--color-text-white));
+            height: 32px;
+            // line-height: 32px;
+            font-size: 1.4rem;
+            padding: 0 12px;
+
+            span {
+              font-size: inherit;
+              margin: 0;
+            }
+          }
+        }
+
+        p {
+          font-size: 1.4rem;
+          margin: 0;
+          color: rgb(var(--color-text-white));
+        }
+      }
     }
   }
 }
