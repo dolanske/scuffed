@@ -311,6 +311,9 @@ class MseStream {
     onvideochanged;
     onframe;
 
+    // 
+    events = {}
+
     constructor(streamUri, options) {
         this.streamUri = streamUri;
         this.videoStarted = false;
@@ -347,6 +350,11 @@ class MseStream {
 
     get statsContainer() {
         return this.stats.statsParent;
+    }
+
+    on(eventType, callback) {
+        // Executes a callback on given event
+        events[eventType] = callback
     }
 
     reconnect() {
@@ -415,7 +423,10 @@ class MseStream {
     }
 
     streamFailed() {
-
+        // Execute failed function
+        if (this.events.fail) {
+            this.events.fail()
+        }
     }
 
     webSocketOpen(event) {

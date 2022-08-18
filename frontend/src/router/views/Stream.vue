@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import InputSlider from "../../components/form/InputSlider.vue"
-import { ref, reactive, onMounted, watch, computed, onBeforeUnmount, onUnmounted } from "vue"
+import Spinner from "../../components/simple/Spinner.vue"
+
+import { ref, reactive, onMounted, watch, computed, onBeforeUnmount } from "vue"
 import { isEven } from "../../bin/utils"
 import { onKeyStroke, useMagicKeys, whenever } from "@vueuse/core"
 //@ts-ignore
@@ -27,22 +29,38 @@ onMounted(() => {
     streamEl.value.volume = defaultVolume / 100
 
     // SECTION Begin streaming
-    // startStream(user.value)
-
     stream = new MseStream(`wss://scuffed.tv/api/streams/${user.value}/video`)
     stream.video = el
     stream.attachStream()
+
+    stream.on("fail", () => {
+      state.offline = true
+
+      console.log("fail")
+    })
+    stream.on("init", () => {
+      console.log("init")
+
+      state.loading = true
+      state.offline = false
+    })
+    stream.on("loaded", () => {
+      state.loading = false
+    })
   }
 })
 
-onUnmounted(() => {
+onBeforeUnmount(() => {
   // Remove stream before exiting the page
-  stream.removeStream()
+  if (stream) {
+    stream.removeStream()
+  }
 })
 
 // Video controls
 const state = reactive({
   loading: false,
+  offline: true,
   playing: false,
   UI: true,
   UIHover: false,
@@ -139,7 +157,7 @@ watch(
 </script>
 
 <template>
-  <div class="stream" :class="{ 'is-fullscreen': state.fullscreen }">
+  <div class="stream" :class="{ 'is-fullscreen': state.fullscreen, 'is-offline': state.offline }">
     <router-link
       class="stream-button exit"
       :to="{ name: 'Streams' }"
@@ -149,8 +167,16 @@ watch(
     </router-link>
 
     <div class="stream-video" :class="{ 'is-full': state.fullscreen }">
+      <template v-if="state.offline">
+        <h2>dolanske is offline</h2>
+        <img :src="`/images/${isEven(Date.now()) ? 'nostream2' : 'sleepy'}.png`" alt="" />
+        <router-link :to="{ name: 'Streams' }" class="button">Other streams</router-link>
+      </template>
+
+      <Spinner v-else-if="state.loading" />
+
       <video
-        v-if="true"
+        v-show="!state.loading && !state.offline"
         class="video"
         id="video"
         preload="metadata"
@@ -158,12 +184,6 @@ watch(
         @pause="state.playing = false"
         @play="state.playing = true"
       ></video>
-
-      <template v-else>
-        <h2>dolanske is offline</h2>
-        <img :src="`/images/${isEven(Date.now()) ? 'nostream2' : 'sleepy'}.png`" alt="" />
-        <router-link :to="{ name: 'Streams' }" class="button">Other streams</router-link>
-      </template>
     </div>
     <div
       class="stream-controls"

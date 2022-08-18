@@ -8,7 +8,7 @@
 </template>
 
 <style scoped>
-@import "../../style/setup/_variables.scss";
+/* @import "../../style/setup/_variables.scss"; */
 
 .lds-ring {
   display: inline-block;

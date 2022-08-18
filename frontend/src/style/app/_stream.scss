@@ -16,6 +16,17 @@
     }
   }
 
+  &.is-offline {
+    background-color: rgb(var(--color-bg));
+
+    .stream-button.exit {
+      .material-icons {
+        color: rgba(var(--color-text));
+        text-shadow: none;
+      }
+    }
+  }
+
   // Stream is dark-mode by default, need to update some default styles
   [data-title-left],
   [data-title-right],

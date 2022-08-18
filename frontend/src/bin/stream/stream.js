@@ -303,11 +303,17 @@ export class MseStream {
   #stats
 
   // Events
-  onconnectstart
-  onconnectionsuccess
-  onconnectionfail
-  onvideochanged
-  onframe
+  // onconnectstart
+  // onconnectionsuccess
+  // onframe
+
+  //
+  events = {
+    fail: [],
+    init: [],
+    loaded: [],
+    frame: []
+  }
 
   constructor(streamUri, options) {
     this.streamUri = streamUri
@@ -347,6 +353,26 @@ export class MseStream {
     return this.stats.statsParent
   }
 
+  /**
+   * // Event callbacks for stream events
+   *
+   * @param {fail | init | loaded | frame} eventType
+   * @param {() => void} callback function to execute when event fires
+   */
+
+  on(eventType, callback) {
+    // Attaches a new callback
+    if (this.events[eventType]) {
+      this.events[eventType].push(callback)
+    }
+  }
+
+  executeEvent(type, ...payload) {
+    if (this.events[type]) {
+      this.events[type].map((event) => event(...payload))
+    }
+  }
+
   reconnect() {
     this.removeStream()
     this.attachStream()
@@ -365,10 +391,6 @@ export class MseStream {
     let signal = this.eventController.signal
 
     LOG.debug(`Connecting to '${this.streamUri}'`)
-
-    if (this.onconnectstart != null) {
-      this.onconnectstart()
-    }
 
     this.videoElement.addEventListener("playing", (e) => LOG.debug("playing"), { signal: signal })
     this.videoElement.addEventListener("pause", (e) => LOG.warn("pause"), { signal: signal })
@@ -406,16 +428,21 @@ export class MseStream {
 
     this.stats.deleteStatsContainer()
 
-    this.videoStarted = false
+    this.d = false
     this.mseSource = null
     this.mseBuffer = null
     this.webSocket = null
   }
 
-  streamFailed() {}
+  streamFailed(event) {
+    // Execute failed callback
+    this.executeEvent("fail", event)
+  }
 
   webSocketOpen(event) {
     LOG.debug(`WebSocket connection to '${this.streamUri}' established`)
+
+    this.executeEvent("init")
 
     this.isExpectingData = true
   }
@@ -423,17 +450,13 @@ export class MseStream {
   webSocketClose(event) {
     LOG.warn(`WebSocket connection to '${this.streamUri}' closed: ${event.code}`)
 
-    if (this.onconnectionfail != null) {
-      this.onconnectionfail(event)
-    }
-
-    this.streamFailed()
+    this.streamFailed(event)
   }
 
   webSocketError(event) {
     LOG.warn(`WebSocket connection error`)
 
-    this.streamFailed()
+    this.streamFailed(event)
   }
 
   webSocketMessageInit(codecs) {
@@ -441,7 +464,7 @@ export class MseStream {
 
     LOG.debug(`Received codec parameters: ${this.codec}`)
 
-    // let signal = this.eventController.signal
+    let signal = this.eventController.signal
 
     this.mseSource = new MediaSource()
     this.mseSource.addEventListener("sourceopen", this.mseSourceOpen.bind(this))
@@ -482,15 +505,18 @@ export class MseStream {
   mseBufferUpdateEnd(event) {
     const buffered = this.getBufferedVideoDuration()
 
-    if (!this.videoStarted && buffered >= this.targetBuffer) {
+    if (!this.d && buffered >= this.targetBuffer) {
       LOG.debug(`Starting video with ${buffered} seconds buffered`)
 
-      if (this.onconnectionsuccess != null) {
-        this.onconnectionsuccess()
-      }
+      // Duplicate of 509
+      // if (this.onconnectionsuccess != null) {
+      //   this.onconnectionsuccess()
+      // }
 
       this.videoElement.play()
       this.videoStarted = true
+
+      this.executeEvent("loaded", event)
     }
 
     this.hasInFlightUpdates = false
@@ -506,9 +532,7 @@ export class MseStream {
   }
 
   webSocketSegment(segment) {
-    if (this.onframe != null) {
-      this.onframe(segment)
-    }
+    this.executeEvent("frame", segment)
 
     this.frames.push(segment)
     this.feedFrame()
