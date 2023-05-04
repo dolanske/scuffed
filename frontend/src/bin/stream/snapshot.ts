@@ -98,6 +98,7 @@ export function updateStreamsEvery(frequency: number = 10000) {
   // Decode thumbnails and assign stream list to reactive variable
   async function updateStreams() {
     streams.value = await get<StreamItem[]>("/stream/")
+      .catch(() => [])
     loading.value = false
   }
 
