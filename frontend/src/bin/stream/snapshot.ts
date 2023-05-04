@@ -1,6 +1,7 @@
 "use strict"
 
-import { get, rootUrl } from "../fetch"
+import { get } from "../fetch"
+import { API_URL } from "../config"
 import { onUnmounted, reactive, ref } from "vue"
 import { StreamItem } from "../../types/stream-types"
 
@@ -96,7 +97,7 @@ export function updateStreamsEvery(frequency: number = 10000) {
 
   // Decode thumbnails and assign stream list to reactive variable
   async function updateStreams() {
-    streams.value = await get<StreamItem[]>("/api/streams")
+    streams.value = await get<StreamItem[]>("/stream/")
     loading.value = false
   }
 
@@ -126,7 +127,7 @@ export function getUpdatedThumbnailEvery(streamObject: StreamItem, frequency: nu
 
   async function updateThumbnail() {
     thumbnail.value = await thumbnailDecoder.decode(
-      `${rootUrl}/api/streams/${streamObject.name}/snapshot`
+      `${API_URL}/streams/${streamObject.name}/preview`
     )
   }
 
