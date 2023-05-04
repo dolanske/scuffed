@@ -1,39 +1,29 @@
 <script setup lang="ts">
-import { ref, watch } from "vue"
-import { useRoute } from "vue-router"
+import { useColorMode } from '@vueuse/core';
 
-const route = useRoute()
-const open = ref(false)
-
-watch(open, (val) => {
-  if (val) {
-    window.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") open.value = false
-    })
-  } else {
-    window.removeEventListener("click", () => {})
+const mode = useColorMode({
+  attribute: 'theme',
+  modes: {
+    light: 'light',
+    dark: 'dark',
+    tmtu: 'tmtu'
   }
 })
-
-watch(
-  () => route.name,
-  () => (open.value = false)
-)
 </script>
 
 <template>
-  <div class="navigation" :class="{ active: open }" @click.self="open = false">
-    <button
-      class="nav-button"
-      @click="open = !open"
-      :class="{ active: open, 'has-shadow': route.name === 'Stream' }"
-    ></button>
-
-    <div class="nav-content">
-      <router-link :to="{ name: 'Main' }">Home</router-link>
-      <router-link :to="{ name: 'Account' }">Account</router-link>
-      <router-link :to="{ name: 'Streams' }">Streams</router-link>
-      <router-link :to="{ name: 'ViewDoc', params: { doc: 'intro' } }">Docs</router-link>
+  <div class="navigation">
+    <div class="logo">
+      <img src="/images/logo.svg" alt="">
     </div>
+
+    <router-link :to="{ name: 'Main' }">Home</router-link>
+    <router-link :to="{ name: 'Streams' }">Streams</router-link>
+    <router-link :to="{ name: 'ViewDoc', params: { doc: 'intro' } }">Docs</router-link>
+
+    <router-link class="user-link" :to="{ name: 'Account' }">
+      <div class="user-initials">d</div>
+      dolanske
+    </router-link>
   </div>
 </template>

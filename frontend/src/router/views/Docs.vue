@@ -31,6 +31,10 @@ const nav = [
 
 <template>
   <div class="docs">
+  
+    <div class="docs-content">
+      <router-view></router-view>
+    </div>
     <div class="docs-nav">
       <div class="docs-nav-sticky-wrap">
         <div class="docs-nav-group" v-for="group in nav">
@@ -45,9 +49,6 @@ const nav = [
           </router-link>
         </div>
       </div>
-    </div>
-    <div class="docs-content">
-      <router-view></router-view>
     </div>
   </div>
 </template>

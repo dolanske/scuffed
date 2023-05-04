@@ -1,5 +1,5 @@
 .docs {
-  @include grid(80px, 236px 1fr);
+  @include grid(80px, 1fr 236px);
   min-height: 100vh;
   padding: 96px;
   width: auto !important;
@@ -8,6 +8,7 @@
 
   .docs-nav {
     position: relative;
+    padding-top: 112px;
 
     .docs-nav-sticky-wrap {
       position: sticky;
@@ -48,7 +49,7 @@
 
   .docs-content {
     display: block;
-    max-width: 792px;
+    max-width: 720px;
     padding-bottom: 256px;
   }
 }
@@ -75,7 +76,7 @@
   h1 {
     @include font(900);
     font-size: 5.4rem;
-    margin-bottom: 64px;
+    margin-bottom: 48px;
   }
 
   h2 {
@@ -129,6 +130,7 @@
     @include font(700);
     color: rgb(var(--color-blue));
     text-decoration: underline;
+    text-decoration-thickness: 2px;
 
     &:hover {
       text-decoration: none;

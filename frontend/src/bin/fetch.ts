@@ -1,58 +1,58 @@
-import { merge } from "lodash"
-
-export const rootUrl = "https://scuffed.tv"
-export const url = process.env.NODE_ENV === "development" ? "127.0.0.1:8080" : rootUrl
-
-export function get<T = any>(url: string, options?: {}) {
-  return _handleFetch(
-    url,
-    merge(
-      {
-        method: "GET"
-      },
-      options
-    )
-  ) as Promise<T>
-}
-
-export function post(url: string, body: object | string, options?: object) {
-  return _handleFetch(
-    url,
-    merge(
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body)
-      },
-      options
-    )
-  )
-}
-
-export function put(url: string, body: object | string, options?: object) {
-  return _handleFetch(
-    url,
-    merge(
-      {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body)
-      },
-      options
-    )
-  )
-}
+import { isArray, merge } from 'lodash-es'
+import { API_URL, TOKEN_KEY } from './config'
 
 /**
- * Special function to handle file uploads
+ * This is our small wrapper library around the browser's native fetch().
+ * The main functionality is to simplify making requests into a one liner of code
+ *
+ * ```
+ * await get<ReturnType>('/user', { ...options })
+ * ```
  */
 
-export function upload(url: string, body: object | string, options?: object) {
-  return _handleFetch(url, {
-    method: "POST",
-    body,
-    ...options
-  })
+// TODO: Implement option to abort a fetch request by implementing the AbortController() class
+// Controller used to abort requests
+// export const controller = new AbortController()
+// export const signal = controller.signal
+
+export function get<T = any>(url: string, options?: object) {
+  return _handleFetch<T>(
+    url,
+    merge(
+      {
+        method: 'GET',
+      },
+      options,
+    ),
+  )
+}
+
+export function post<T = any>(url: string, body: object | string, options?: object) {
+  return _handleFetch<T>(
+    url,
+    merge(
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      },
+      options,
+    ),
+  )
+}
+
+export function put<T = any>(url: string, body: object | string, options?: object) {
+  return _handleFetch<T>(
+    url,
+    merge(
+      {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      },
+      options,
+    ),
+  )
 }
 
 export function del(url: string, options?: object) {
@@ -60,54 +60,68 @@ export function del(url: string, options?: object) {
     url,
     merge(
       {
-        method: "DELETE"
+        method: 'DELETE',
       },
-      options
-    )
+      options,
+    ),
   )
+}
+
+/**
+ * Special function to handle file uploads
+ */
+
+export function upload<T = any>(url: string, body: object | string, options?: object) {
+  return _handleFetch<T>(url, {
+    method: 'POST',
+    body,
+    ...options,
+  })
 }
 
 // Private handler functions
 
-async function _handleFetch(url: string, options: object) {
-  // const token = localStorage.getItem("bearer_token")
+async function _handleFetch<T>(url: string, options: object) {
+  const token = localStorage.getItem(TOKEN_KEY)
 
   merge(options, {
-    mode: "cors"
-    // headers: {
-    //   Authorization: `Bearer ${token}`
-    // }
+    mode: 'cors',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
   })
 
-  return fetch(rootUrl + url, options).then(_handleResponse)
+  if (url.includes('http'))
+    return fetch(url, options).then<T>(_handleResponse)
+
+  return fetch(API_URL + url, options).then<T>(_handleResponse)
 }
 
 async function _handleResponse(response: Response) {
-  // Reset on 403
-  // if ([401, 403].includes(response.status)) {
-  //   localStorage.removeItem("user")
-  //   localStorage.removeItem("bearer_token")
+  if (response.status !== 200) {
+    return response.text().then((text: string) => {
+      let message = null
 
-  //   setTimeout(() => {
-  //     if (window.location.href === "/login") {
-  //       window.location.href = "/login"
-  //     }
+      try {
+        const parsed = JSON.parse(text)
+        message = parsed.message
+      }
+      catch (e) {
+        message = text
+      }
 
-  //     return Promise.reject({
-  //       message: "Unexpected issue. Please clear site data, reload and try again."
-  //     })
-  //   }, 50)
-  // }
+      return Promise.reject(new Error(
+        message || `An unexpected error occured: ${response.statusText}`,
+      ))
+    })
+  }
 
-  return response.json().then((res: {}) => {
-    if (!response.ok || response.status !== 200) {
-      return Promise.reject({
-        status: response.status,
-        message: response.statusText,
-        data: res
-      })
-    }
+  return response.text().then((text: string) => {
+    const data = text && JSON.parse(text)
 
-    return res
+    if (!response.ok)
+      return Promise.reject(data)
+
+    return data
   })
 }
